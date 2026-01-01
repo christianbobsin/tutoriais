@@ -8,4 +8,5 @@ Repositório onde guardo tutoriais e configurações específicas de ambientes, 
 - **VS Code** — hacks e tweaks para o Visual Studio Code.
   - [🎨 Customizando ícones de pastas e arquivos](vscode/customizar-icones.md)
 - **Windows** — tutoriais para serem executados no Windows.
+  - [🖼️ Automação de Wallpaper com Identificação do PC (Help Desk)](windows/wallpaper_overlay.md)
   - [🧭 Git + SSH + GitHub no Windows 11](windows/github.md)
