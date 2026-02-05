@@ -163,3 +163,48 @@ sudo apt install -y ./slack.deb
 ```bash
 sudo snap install postman
 ```
+
+
+## Video Player (Celluloid + mpv)
+
+
+```bash
+sudo apt update
+sudo apt install -y celluloid mpv
+```
+
+### Habilitar “clique/space = pausa” no mpv
+
+```bash
+mkdir -p ~/.config/mpv
+
+cat > ~/.config/mpv/mpv.conf << 'EOF'
+vo=gpu-next
+profile=gpu-hq
+hwdec=auto-safe
+EOF
+
+cat > ~/.config/mpv/input.conf << 'EOF'
+SPACE cycle pause       # barra de espaço pausa/retoma
+MBTN_LEFT cycle pause   # clique esquerdo pausa/retoma
+# (duplo clique = tela cheia)
+EOF
+```
+
+> Dica: abra o **Celluloid** e em *Preferências* mantenha o “Usar configurações do mpv” ativado (padrão). Assim o clique funciona do jeitinho acima.
+
+Defina o Celluloid como player padrão (opcional):
+
+```bash
+xdg-mime default io.github.celluloid_player.Celluloid.desktop video/mp4
+xdg-mime default io.github.celluloid_player.Celluloid.desktop video/x-matroska
+xdg-mime default io.github.celluloid_player.Celluloid.desktop video/x-msvideo
+```
+
+---
+## Gimp
+
+```bash
+sudo apt update
+sudo apt install -y gimp
+```
