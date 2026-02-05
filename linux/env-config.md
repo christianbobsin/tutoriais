@@ -118,7 +118,7 @@ code .
 ```bash
 cd ~/Downloads
 wget -O jetbrains-toolbox.tar.gz "https://data.services.jetbrains.com/products/download?platform=linux&code=TBA"
-tar -xf jetbrains-toolbox.tar.gz
+find . -maxdepth 3 -type f -name 'jetbrains-toolbox' -print -exec chmod +x {} \; -exec {} \;
 ./jetbrains-toolbox-*/jetbrains-toolbox
 ```
 
