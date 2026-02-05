@@ -146,3 +146,20 @@ flatpak install -y flathub com.tomjwatson.Emote
   **Atalho:** por exemplo **Super+.** ou **Ctrl+Alt+E**
 
 3. Use: aperte o atalho, clique no emoji e pronto (cola no app atual; se algum app não permitir colagem automática, ele já fica no clipboard).
+
+
+---
+## Slack
+
+```bash
+cd ~/Downloads
+wget "$(curl -fsSL https://slack.com/downloads/linux | sed -nE 's/.*href="(https:[^"]+amd64\.deb)".*/\1/p' | head -n1)" -O slack.deb
+sudo apt install -y ./slack.deb
+```
+
+---
+## Postman
+
+```bash
+sudo snap install postman
+```
