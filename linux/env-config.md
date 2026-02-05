@@ -2,14 +2,15 @@
 
 Configuração do Avell Ion A70 com Ubuntu 25.10
 
+---
 ## Gnome Extesion Mananger
 
 ```bash
 sudo apt update
 sudo apt install -y gnome-shell-extension-manager gnome-shell-extension-prefs
-
 ```
 
+---
 ## Brave
 
 ```bash
@@ -23,6 +24,8 @@ sudo apt install -y brave-browser
 
 ```
 
+---
+
 ## Chrome
 
 ### 1️⃣ Baixar o pacote `.deb` oficial
@@ -30,7 +33,6 @@ sudo apt install -y brave-browser
 ```bash
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 ```
-
 
 ### 2️⃣ Instalar o pacote
 
@@ -45,9 +47,31 @@ sudo apt install -y ./google-chrome-stable_current_amd64.deb
 google-chrome --version
 ```
 
+---
+## Edge
 
+### 1️⃣ Preparar o keyring
+
+```bash
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc   | sudo gpg --dearmor -o /etc/apt/keyrings/microsoft.gpg
+```
+
+### 2️⃣ Adicionar o repositório do Edge
+
+```bash
+echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list
+```
+
+### 3️⃣ Instalar
+
+```bash
+sudo apt update
+sudo apt install -y microsoft-edge-stable
+```
+
+---
 ## VS Code
-
 
 ### 1️⃣ Atualize o sistema
 
@@ -88,6 +112,7 @@ Ou abra direto:
 code .
 ```
 
+---
 ## DataGrip
 
 ```bash
@@ -97,6 +122,7 @@ tar -xf jetbrains-toolbox.tar.gz
 ./jetbrains-toolbox-*/jetbrains-toolbox
 ```
 
+---
 ## Emote
 
 Para acessao os emojis com **(win + .)** como no Windows.
