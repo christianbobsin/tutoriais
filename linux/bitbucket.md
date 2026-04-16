@@ -1,6 +1,6 @@
 # 🧭 Guia simples: Git + SSH + Bitbucket no **Linux (Ubuntu e Debian)**
 
-Versão 1.0.0 - 16/04/2026
+Versão 1.0.1 - 16/04/2026
 
 Este passo-a-passo foi feito para quem **está começando** com:
 
@@ -28,12 +28,52 @@ Antes de começar, você precisa:
 
 > 💡 Sempre que eu falar “**terminal**”, estou falando do aplicativo de terminal padrão do seu sistema, como **Terminal** no Ubuntu ou **Console / Terminal** no Debian com GNOME.
 
+## 0.1 🚨 Antes de tudo: em qual usuário você deve rodar cada comando?
+
+Esta parte é **muito importante**:
+
+- 👤 **Comandos de Git do seu usuário** devem ser rodados como **seu usuário normal**
+- 🔐 **Comandos da pasta `~/.ssh`** devem ser rodados como **seu usuário normal**
+- 🗝️ **`ssh-keygen` e `ssh-add`** devem ser rodados como **seu usuário normal**
+- 📦 **`sudo` ou `root`** devem ser usados **somente** para instalar pacotes ou mexer em arquivos do sistema
+
+### ✅ Regra simples para não errar
+
+Se o comando mexe em uma destas coisas:
+
+- `~/.ssh`
+- `git config --global`
+- sua chave SSH
+- seu nome e seu e-mail no Git
+
+então rode como **usuário normal**, sem `sudo`.
+
+Se o comando for instalar programa com `apt`, aí sim pode usar:
+
+- `sudo ...`
+- ou `su -` / `root`, se seu Debian não tiver `sudo`
+
+### 🔎 Como conferir em qual usuário você está
+
+Rode:
+
+```bash
+whoami
+```
+
+- Se aparecer seu usuário normal, por exemplo `christian`, pode continuar ✅
+- Se aparecer `root`, **pare** para os passos de Git e SSH ❌
+
+> 🚨 Resumo direto:
+> `git config --global`, `mkdir ~/.ssh`, `chmod ~/.ssh`, `ssh-keygen`, `ssh-add` e `cat ~/.ssh/id_ed25519.pub` **não** devem ser executados como `root`.
+
 ### 🆚 Ubuntu x Debian neste guia
 
 - 🟠 **Ubuntu** é a referência principal porque costuma ser o desktop Linux mais comum.
 - 🔴 **Debian** aparece nas diferenças práticas, para você não travar se estiver usando ele.
 - 📦 Nos dois, os comandos principais são quase iguais porque ambos usam `apt`.
 - 👮 Se no seu Debian o comando `sudo` não existir, entre como `root` com `su -` e rode os mesmos comandos **sem** `sudo`.
+- 🚨 Essa dica de usar `root` vale para **instalação de pacotes com `apt`**. Ela **não vale** para configurar `git --global` nem para criar sua chave em `~/.ssh`.
 
 ---
 
@@ -148,6 +188,10 @@ Se mostrar a versão, tudo certo ✅
 
 Isso define **quem é você** nos commits.
 
+> 🚨 Rode estes comandos como **usuário normal**.
+> Não use `sudo` aqui.
+> Não rode isso logado como `root`.
+
 No terminal, troque pelos seus dados:
 
 ```bash
@@ -175,6 +219,70 @@ user.email=seu_email_do_bitbucket@example.com
 
 Se aparecer isso, o Git já está com seu nome e e-mail configurados corretamente 😎
 
+### ♻️ E se já existir `user.name` e `user.email`?
+
+Se já aparecerem valores antigos no `git config --global --list`, você tem duas opções:
+
+- ✏️ **Substituir direto** pelos valores corretos
+- 🗑️ **Apagar primeiro** e depois configurar de novo
+
+### ✅ Jeito mais simples: substituir direto
+
+Rode novamente:
+
+```bash
+git config --global user.name "Seu Nome Completo"
+git config --global user.email "seu_email_do_bitbucket@example.com"
+```
+
+Isso sobrescreve os valores globais do seu usuário normal.
+
+### 🧹 Se você quiser apagar antes
+
+```bash
+git config --global --unset-all user.name
+git config --global --unset-all user.email
+```
+
+Depois configure de novo:
+
+```bash
+git config --global user.name "Seu Nome Completo"
+git config --global user.email "seu_email_do_bitbucket@example.com"
+```
+
+### 🚨 Como desfazer se você adicionou o usuário do Git no lugar errado
+
+Se você rodou como `root`, os dados foram para o Git do `root`.
+
+Para apagar do `root`:
+
+```bash
+sudo git config --global --unset-all user.name
+sudo git config --global --unset-all user.email
+```
+
+Depois, no seu usuário normal:
+
+```bash
+git config --global user.name "Seu Nome Completo"
+git config --global user.email "seu_email_do_bitbucket@example.com"
+```
+
+### 🧠 O que significa `--global` de verdade?
+
+No Git, `--global` quer dizer:
+
+- “salvar para o **usuário atual**”
+- **não** quer dizer “salvar para o sistema todo”
+
+Então:
+
+- se você rodar como `christian`, ele grava em `/home/christian/.gitconfig`
+- se você rodar como `root`, ele grava em `/root/.gitconfig`
+
+Ou seja: se você fizer isso como `root`, configurou o Git do `root`, não o seu.
+
 ---
 
 ## 5. 📁 Verificar (e criar) a pasta `.ssh`
@@ -187,6 +295,9 @@ No Linux, o local **padrão** para guardar chaves SSH é:
 
 Neste guia, vamos usar **somente esse local padrão**.  
 Nada de salvar chave em pasta personalizada.
+
+> 🚨 Todos os comandos desta seção devem ser executados como **usuário normal**.
+> Se você estiver como `root`, a pasta criada será `/root/.ssh`, e não a sua.
 
 ### 5.1 👀 Verificar se a pasta `.ssh` existe
 
@@ -208,6 +319,15 @@ mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 ```
 
+> ❌ Não use:
+>
+> ```bash
+> sudo mkdir -p ~/.ssh
+> sudo chmod 700 ~/.ssh
+> ```
+>
+> Isso pode criar ou alterar a pasta com dono errado.
+
 Você pode conferir com:
 
 ```bash
@@ -215,6 +335,76 @@ ls -ld ~/.ssh
 ```
 
 Se aparecer a pasta, está pronta 👌
+
+### ♻️ E se a pasta `~/.ssh` já existir?
+
+Isso é normal.
+
+Se ela já existir:
+
+- ✅ **não precisa apagar**
+- ✅ normalmente basta manter e continuar
+- ✅ só confirme se ela pertence ao seu usuário normal
+
+Para conferir dono e permissões:
+
+```bash
+ls -ld ~/.ssh
+```
+
+Você quer algo parecido com:
+
+```text
+drwx------ 2 seuusuario seuusuario ... /home/seuusuario/.ssh
+```
+
+### 🔧 Se a pasta existe, mas está com permissões erradas
+
+Rode como seu usuário normal:
+
+```bash
+chmod 700 ~/.ssh
+```
+
+### 🚨 Se a pasta foi criada com dono errado
+
+Se você usou `sudo` e a pasta ficou como dona do `root`, corrija assim:
+
+```bash
+sudo chown -R "$USER:$USER" ~/.ssh
+chmod 700 ~/.ssh
+```
+
+### 🗑️ Como desfazer a criação da pasta `.ssh`
+
+Só apague a pasta se você tiver certeza de que ela **não tem nenhuma chave ou arquivo importante**.
+
+Primeiro confira o conteúdo:
+
+```bash
+ls -la ~/.ssh
+```
+
+Se ela estiver vazia e você quiser remover:
+
+```bash
+rmdir ~/.ssh
+```
+
+Se ela tiver sido criada errada no `root`, confira:
+
+```bash
+sudo ls -la /root/.ssh
+```
+
+Se você tiver certeza de que quer remover a pasta do `root`:
+
+```bash
+sudo rm -rf /root/.ssh
+```
+
+> 🚨 Use `rm -rf` com cuidado.
+> Esse comando apaga a pasta e tudo dentro dela.
 
 ---
 
@@ -229,6 +419,9 @@ No terminal, trocando pelo **SEU e-mail**:
 ```bash
 ssh-keygen -t ed25519 -C "seu_email_do_bitbucket@example.com"
 ```
+
+> 🚨 Rode como **usuário normal**.
+> Se você fizer isso como `root`, a chave vai parar em `/root/.ssh/id_ed25519`, e isso não é o que você quer.
 
 Você verá algo como:
 
@@ -285,6 +478,8 @@ Rode:
 ssh-add ~/.ssh/id_ed25519
 ```
 
+> 🚨 Também rode este comando como **usuário normal**.
+
 - Se pedir a passphrase, digite a senha da chave.
 - Se terminar sem erro, ótimo.
 
@@ -333,6 +528,8 @@ No terminal:
 ```bash
 cat ~/.ssh/id_ed25519.pub
 ```
+
+> 🚨 Esse arquivo deve estar no seu `~/.ssh`, não no `/root/.ssh`.
 
 Você verá uma linha longa parecida com:
 
@@ -449,3 +646,110 @@ Se tudo isso estiver ok:
 - Você já consegue **clonar** repositórios via SSH 🪣
 - Consegue dar **git pull** / **git push** sem digitar senha o tempo todo 🚀
 - Seus commits aparecem com **seu nome** e **seu e-mail** certinhos 🧾
+
+---
+
+## 13. 🧹 Se você fez como `root` por engano, como desfazer?
+
+Se você rodou os passos de Git e SSH como `root`, o problema mais comum é este:
+
+- o Git foi salvo em `/root/.gitconfig`
+- a chave SSH foi criada em `/root/.ssh`
+- o seu usuário normal continua sem configuração
+
+### 13.1 👀 Ver se você está como `root`
+
+Rode:
+
+```bash
+whoami
+```
+
+Se aparecer `root`, saia da sessão de root:
+
+```bash
+exit
+```
+
+Depois abra o terminal normalmente no seu usuário.
+
+### 13.2 🔎 Conferir se o Git foi configurado no lugar errado
+
+Como usuário normal:
+
+```bash
+git config --global --list
+```
+
+Se não aparecer `user.name` e `user.email`, é sinal de que você provavelmente configurou no `root`.
+
+Para conferir o `root`, use:
+
+```bash
+sudo git config --global --list
+```
+
+Se ali aparecer seu nome e seu e-mail, então foi gravado em `/root/.gitconfig`.
+
+### 13.3 🗑️ Remover a configuração errada do Git no `root`
+
+Se você quer apagar a configuração do `root`, rode:
+
+```bash
+sudo git config --global --unset-all user.name
+sudo git config --global --unset-all user.email
+```
+
+Depois configure de novo no seu usuário normal:
+
+```bash
+git config --global user.name "Seu Nome Completo"
+git config --global user.email "seu_email_do_bitbucket@example.com"
+```
+
+### 13.4 🔎 Conferir se a chave SSH foi criada no lugar errado
+
+Veja se ela foi parar no `root`:
+
+```bash
+sudo ls -la /root/.ssh
+```
+
+Se aparecer `id_ed25519` e `id_ed25519.pub`, a chave foi criada no lugar errado.
+
+### 13.5 🔁 Corrigir a chave SSH
+
+O caminho mais simples para iniciantes é:
+
+1. apagar a chave errada do `root`
+2. gerar tudo de novo no seu usuário normal
+
+Para apagar a chave do `root`:
+
+```bash
+sudo rm -f /root/.ssh/id_ed25519 /root/.ssh/id_ed25519.pub
+```
+
+Depois, já no seu usuário normal, gere novamente:
+
+```bash
+ssh-keygen -t ed25519 -C "seu_email_do_bitbucket@example.com"
+```
+
+### 13.6 🧯 E se eu já adicionei a chave errada no Bitbucket?
+
+Sem problema.
+
+1. Vá em `https://bitbucket.org/account/settings/ssh-keys/`
+2. Remova a chave antiga
+3. Gere a nova no seu usuário normal
+4. Adicione a nova chave pública no Bitbucket
+
+### ✅ Resumo do conserto
+
+Se você fez tudo como `root`, faça assim:
+
+1. saia do `root`
+2. apague a configuração errada do Git em `/root/.gitconfig`
+3. apague a chave errada de `/root/.ssh`
+4. refaça os passos no seu usuário normal
